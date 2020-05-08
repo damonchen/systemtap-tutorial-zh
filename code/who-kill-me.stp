@@ -1,0 +1,10 @@
+#!/usr/bin/env stap
+
+global target_pid = 23631
+probe signal.send{
+  if (sig_pid == target_pid) {
+    printf("%s(%d) send %s to %s(%d)\n", execname(), pid(), sig_name, pid_name, sig_pid);
+    printf("parent of sender: %s(%d)\n", pexecname(), ppid())
+    printf("task_ancestry:%s\n", task_ancestry(pid2task(pid()), 1));
+  }
+}

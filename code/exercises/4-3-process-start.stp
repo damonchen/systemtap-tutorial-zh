@@ -1,0 +1,12 @@
+#!/usr/bin/env stap
+
+
+# syscall list: https://syscalls.kernelgrok.com/
+probe kernel.function("sys_execve").call
+{
+    processes[pid()] = execname()
+    printf("%d => %s(%s)\n", pid(), execname(), $$var)
+}
+
+global processes[1000] 
+

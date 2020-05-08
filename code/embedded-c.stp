@@ -1,0 +1,30 @@
+#!/usr/bin/stap
+# using stap -g embedded-c.stp
+
+%{
+#include <linux/sched.h>
+#include <linux/list.h>
+%}
+
+
+
+# definition function with type annoation
+function task_execname_by_pid:string(pid:long) %{
+    struct task_struct *p;
+    struct list_head *_p, *_n;
+
+    list_for_each_safe(_p, _n, &current->tasks) {
+        p = list_entry(_p, struct task_struct, tasks);
+        if (p->pid == (int)STAP_ARG_pid) {
+            snprintf(STAP_RETVALUE, MAXSTRINGLEN, "%s", p->comm);
+        }
+    }
+%}
+
+
+probe begin
+{
+    printf("%s(%d)\n", task_execname_by_pid(target()), target())
+    exit()
+}
+

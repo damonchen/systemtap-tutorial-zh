@@ -1,0 +1,27 @@
+#!/usr/bin/env stap
+
+# how to run
+# stat - C '%D %i' /etc/crontab
+# fd03 133099
+# stap inode-watch.stp 0xfd 3 133099
+
+# stap will parse arguments with $1,$2,$3, like bash
+
+probe kernel.function("vfs_write"),
+      kernel.function("vfs_read")
+
+{
+    if(@defined($file->f_path->dentry)) {
+        dev_nr = $file->f_path->dentry->d_inode->i_sb->s_dev
+        inode_nr = $file->f_path->dentry->d_inode->i_ino
+    } else {
+        dev_nr = $file->dentry->d_inode->i_sb->s_dev
+        inode_nr = $file->dentry->d_inode->i_ino
+    }
+
+    # major/minor device
+    if(dev_nr == ($1 << 20 | $2) && inode_nr == $3) {
+            printf("%s(%d) %s 0x%x%u\n",
+            execname(), pid(), ppfunc(), dev_nr, inode_nr)
+    }
+}

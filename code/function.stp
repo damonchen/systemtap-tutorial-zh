@@ -1,0 +1,40 @@
+#!/usr/bin/env stap
+
+function system_uid_p(u) {
+    return u < 500
+}
+
+function makedev(major, minor) {
+    return major << 20 | minor
+}
+
+function trace_common() {
+    printf("%d %s(%d)", gettimeofday_s(), execname(), pid())
+}
+
+
+global step = 0
+
+function fibonacci(i) {
+    step++
+    if ( i < 1 ) return 0
+    else if (i < 2 ) return 1
+    else return fibonacci(i-1) + fibonacci(i-2)
+}
+
+
+
+function deep_recu(i) {
+    if (i >= 753) {
+        return i
+    }
+    return deep_recu(i+1)
+}
+
+
+probe timer.sec(2) {
+    v = fibonacci(13)
+    printf("fib = %d, step=%d, deep=%d\n", v, step, deep_recu(0))
+    step = 0
+}
+

@@ -1,0 +1,15 @@
+#!/usr/bin/env stap
+
+probe begin {
+    timer_begin("bench")
+
+    for(i=0; i<100; i++);
+
+    printf("%d cycles\n", timer_end("bench"))
+    exit()
+}
+
+# override for greater precision
+function __time_value() {
+    return get_ticks()
+}
